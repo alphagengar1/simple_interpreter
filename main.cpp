@@ -1,9 +1,9 @@
 #include <functional>
 #include <iostream>
+#include <list>
 #include <map>
 #include <math.h>
 #include <memory>
-#include <stack>
 #include <string>
 #include <vector>
 using namespace std;
@@ -24,6 +24,14 @@ enum class TokenKind {
 struct Token {
   TokenKind kind;
   int value;
+};
+
+list<list<TokenKind>> Order = {{TokenKind::Plus, TokenKind::Minus},
+                               {TokenKind::Star, TokenKind::Slash}};
+
+map<list<TokenKind>, int> Directionality = {
+    {{TokenKind::Plus, TokenKind::Minus}, -1},
+    {{TokenKind::Star, TokenKind::Slash}, -1},
 };
 
 map<TokenKind, function<int(int, int)>> funcMap = {
@@ -134,34 +142,63 @@ vector<Token> tokenizer(string line) {
   return tokens;
 }
 
-unique_ptr<Node> plusMinus(vector<Token> tokens);
-unique_ptr<Node> multDivide(vector<Token> tokens);
+unique_ptr<Node> doOperation(vector<Token> tokens,
+                             list<list<TokenKind>>::iterator curr);
 unique_ptr<Node> parenValue(vector<Token> tokens);
 
-unique_ptr<Node> plusMinus(vector<Token> tokens) {
+int find_location(vector<Token> tokens, list<list<TokenKind>>::iterator curr) {
   int location = -1;
   int parenCount = 0;
+  bool found = false;
 
-  for (int i = tokens.size() - 1; i >= 0; i--) {
-    if (tokens[i].kind == TokenKind::Plus ||
-        tokens[i].kind == TokenKind::Minus) {
-      location = i;
-      break;
+  int step = Directionality[*curr];
+  int start = Directionality[*curr] == 1 ? 0 : tokens.size() - 1;
+  int end = Directionality[*curr] == 1 ? tokens.size() : -1;
+
+  TokenKind opening =
+      Directionality[*curr] == 1 ? TokenKind::LParen : TokenKind::RParen;
+
+  TokenKind closing =
+      Directionality[*curr] == 1 ? TokenKind::RParen : TokenKind::LParen;
+
+  for (int i = start; i != end; i += step) {
+    for (auto it : *curr) {
+      if (tokens[i].kind == it) {
+        location = i;
+        found = true;
+        break;
+      }
     }
-    if (tokens[i].kind == TokenKind::RParen) {
+    if (found)
+      break;
+
+    if (tokens[i].kind == opening) {
       parenCount++;
-      while (i >= 0 && parenCount != 0) {
-        i--;
-        if (tokens[i].kind == TokenKind::RParen)
+      while (i < tokens.size() && parenCount != 0) {
+        i += step;
+        if (tokens[i].kind == opening)
           parenCount++;
 
-        if (tokens[i].kind == TokenKind::LParen)
+        if (tokens[i].kind == closing)
           parenCount--;
       }
     }
   }
+  return location;
+}
+
+unique_ptr<Node> doOperation(vector<Token> tokens,
+                             list<list<TokenKind>>::iterator curr) {
+  int location = -1;
+
+  location = find_location(tokens, curr);
+
   if (location == -1) {
-    return multDivide(tokens);
+    if (++curr == Order.end()) {
+      return parenValue(tokens);
+    }
+    --curr;
+    return doOperation(tokens, ++curr);
   }
 
   vector<Token> tokensLeft;
@@ -174,57 +211,13 @@ unique_ptr<Node> plusMinus(vector<Token> tokens) {
     tokensRight.push_back(tokens[i]);
   }
 
-  unique_ptr<Node> left(plusMinus(tokensLeft));
-  unique_ptr<Node> right(plusMinus(tokensRight));
+  unique_ptr<Node> left(doOperation(tokensLeft, curr));
+  unique_ptr<Node> right(doOperation(tokensRight, curr));
 
   unique_ptr<Node> root = make_unique<OpNode>(
       tokens[location].kind, std::move(left), std::move(right));
   return root;
-};
-
-unique_ptr<Node> multDivide(vector<Token> tokens) {
-  int location = -1;
-  int parenCount = 0;
-
-  for (int i = tokens.size() - 1; i >= 0; i--) {
-    if (tokens[i].kind == TokenKind::Star ||
-        tokens[i].kind == TokenKind::Slash) {
-      location = i;
-      break;
-    }
-    if (tokens[i].kind == TokenKind::RParen) {
-      parenCount++;
-      while (i >= 0 && parenCount != 0) {
-        i--;
-        if (tokens[i].kind == TokenKind::RParen)
-          parenCount++;
-
-        if (tokens[i].kind == TokenKind::LParen)
-          parenCount--;
-      }
-    }
-  }
-  if (location == -1) {
-    return parenValue(tokens);
-  }
-
-  vector<Token> tokensLeft;
-  vector<Token> tokensRight;
-
-  for (int i = 0; i < location; i++) {
-    tokensLeft.push_back(tokens[i]);
-  }
-  for (int i = location + 1; i < tokens.size(); i++) {
-    tokensRight.push_back(tokens[i]);
-  }
-
-  unique_ptr<Node> left(multDivide(tokensLeft));
-  unique_ptr<Node> right(multDivide(tokensRight));
-
-  unique_ptr<Node> root = make_unique<OpNode>(
-      tokens[location].kind, std::move(left), std::move(right));
-  return root;
-};
+}
 
 unique_ptr<Node> parenValue(vector<Token> tokens) {
   if (tokens.size() == 1 && tokens[0].kind == TokenKind::Number) {
@@ -237,7 +230,7 @@ unique_ptr<Node> parenValue(vector<Token> tokens) {
     for (int i = 1; i < tokens.size() - 1; i++) {
       newTokens.push_back(tokens[i]);
     }
-    return plusMinus(newTokens);
+    return doOperation(newTokens, Order.begin());
   }
   cout << "PAREN VALUE ERROR\n";
   for (int i = 0; i < tokens.size(); i++) {
@@ -257,7 +250,7 @@ int main() {
 
   for (const string &line : lines) {
     vector<Token> tokens = tokenizer(line);
-    auto root = plusMinus(tokens);
+    auto root = doOperation(tokens, Order.begin());
     cout << line << '=';
     cout << root->eval();
     cout << '\n';
