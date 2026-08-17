@@ -87,7 +87,7 @@ public:
   }
 };
 
-vector<Token> tokenizer(string &line) {
+vector<Token> tokenizer(string line) {
 
   vector<Token> tokens;
 
@@ -110,7 +110,6 @@ vector<Token> tokenizer(string &line) {
     }
     if (line[i] == '/') {
       tokens.push_back({TokenKind::Slash, 4});
-      i++;
       continue;
     }
     if (line[i] == '(') {
@@ -141,16 +140,23 @@ unique_ptr<Node> parenValue(vector<Token> tokens);
 
 unique_ptr<Node> plusMinus(vector<Token> tokens) {
   int location = -1;
+  int parenCount = 0;
 
-  for (int i = 0; i < tokens.size(); i++) {
+  for (int i = tokens.size() - 1; i >= 0; i--) {
     if (tokens[i].kind == TokenKind::Plus ||
         tokens[i].kind == TokenKind::Minus) {
       location = i;
       break;
     }
-    if (tokens[i].kind == TokenKind::LParen) {
-      while (tokens[i].kind != TokenKind::RParen && i < tokens.size()) {
-        i++;
+    if (tokens[i].kind == TokenKind::RParen) {
+      parenCount++;
+      while (i >= 0 && parenCount != 0) {
+        i--;
+        if (tokens[i].kind == TokenKind::RParen)
+          parenCount++;
+
+        if (tokens[i].kind == TokenKind::LParen)
+          parenCount--;
       }
     }
   }
@@ -178,16 +184,23 @@ unique_ptr<Node> plusMinus(vector<Token> tokens) {
 
 unique_ptr<Node> multDivide(vector<Token> tokens) {
   int location = -1;
+  int parenCount = 0;
 
-  for (int i = 0; i < tokens.size(); i++) {
+  for (int i = tokens.size() - 1; i >= 0; i--) {
     if (tokens[i].kind == TokenKind::Star ||
         tokens[i].kind == TokenKind::Slash) {
       location = i;
       break;
     }
-    if (tokens[i].kind == TokenKind::LParen) {
-      while (tokens[i].kind != TokenKind::RParen && i < tokens.size()) {
-        i++;
+    if (tokens[i].kind == TokenKind::RParen) {
+      parenCount++;
+      while (i >= 0 && parenCount != 0) {
+        i--;
+        if (tokens[i].kind == TokenKind::RParen)
+          parenCount++;
+
+        if (tokens[i].kind == TokenKind::LParen)
+          parenCount--;
       }
     }
   }
@@ -242,9 +255,11 @@ int main() {
     lines.push_back(line);
   }
 
-  for (string line : lines) {
+  for (const string &line : lines) {
     vector<Token> tokens = tokenizer(line);
     auto root = plusMinus(tokens);
+    cout << line << '=';
     cout << root->eval();
+    cout << '\n';
   }
 }
