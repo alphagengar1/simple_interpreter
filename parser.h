@@ -7,16 +7,6 @@
 #include <list>
 #include <map>
 
-std::unique_ptr<Node>
-doOperation(std::vector<Token> tokens,
-            std::list<std::list<TokenKind>>::iterator curr, int begin, int end);
-
-std::unique_ptr<Node> doOperation(std::vector<Token> tokens);
-
-std::unique_ptr<Node> parenValue(std::vector<Token> tokens, int begin, int end);
-
-int find_location(std::vector<Token> tokens,
-                  std::list<std::list<TokenKind>>::iterator curr, int begin,
-                  int end);
+std::unique_ptr<Node> doOperation(std::vector<Token> &tokens);
 
 #endif // !PARSER_H

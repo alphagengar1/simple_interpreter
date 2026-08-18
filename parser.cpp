@@ -2,6 +2,17 @@
 
 using std::vector;
 
+std::unique_ptr<Node>
+doOperation(std::vector<Token> &tokens,
+            std::list<std::list<TokenKind>>::iterator curr, int begin, int end);
+
+std::unique_ptr<Node> parenValue(std::vector<Token> &tokens, int begin,
+                                 int end);
+
+int find_location(std::vector<Token> &tokens,
+                  std::list<std::list<TokenKind>>::iterator curr, int begin,
+                  int end);
+
 std::map<std::list<TokenKind>, int> Directionality = {
     {{TokenKind::Plus, TokenKind::Minus}, -1},
     {{TokenKind::Star, TokenKind::Slash}, -1},
@@ -18,37 +29,10 @@ int OpNode::eval() {
   return funcMap.at(operation)(leftChild->eval(), rightChild->eval());
 }
 
-inline std::list<std::list<TokenKind>> Order = {
-    {TokenKind::Plus, TokenKind::Minus}, {TokenKind::Star, TokenKind::Slash}};
+std::list<std::list<TokenKind>> Order = {{TokenKind::Plus, TokenKind::Minus},
+                                         {TokenKind::Star, TokenKind::Slash}};
 
-std::unique_ptr<Node> doOperation(vector<Token> tokens) {
-  return doOperation(tokens, Order.begin(), 0, tokens.size());
-}
-
-std::unique_ptr<Node>
-doOperation(vector<Token> tokens,
-            std::list<std::list<TokenKind>>::iterator curr, int begin,
-            int end) {
-  int location = -1;
-
-  location = find_location(tokens, curr, begin, end);
-
-  if (location == -1) {
-    if (++curr == Order.end()) {
-      return parenValue(tokens, begin, end);
-    }
-    return doOperation(tokens, curr, begin, end);
-  }
-
-  std::unique_ptr<Node> left(doOperation(tokens, curr, begin, location));
-  std::unique_ptr<Node> right(doOperation(tokens, curr, location + 1, end));
-
-  std::unique_ptr<Node> root = std::make_unique<OpNode>(
-      tokens[location].kind, std::move(left), std::move(right));
-  return root;
-}
-
-std::unique_ptr<Node> parenValue(vector<Token> tokens, int begin, int end) {
+std::unique_ptr<Node> parenValue(vector<Token> &tokens, int begin, int end) {
   if (end - begin == 1 && tokens[begin].kind == TokenKind::Number) {
     std::unique_ptr<Node> num =
         std::make_unique<NumberNode>(tokens[begin].value);
@@ -65,7 +49,7 @@ std::unique_ptr<Node> parenValue(vector<Token> tokens, int begin, int end) {
   return nullptr;
 };
 
-int find_location(vector<Token> tokens,
+int find_location(vector<Token> &tokens,
                   std::list<std::list<TokenKind>>::iterator curr, int begin,
                   int end) {
   int location = -1;
@@ -106,4 +90,31 @@ int find_location(vector<Token> tokens,
     }
   }
   return location;
+}
+
+std::unique_ptr<Node>
+doOperation(vector<Token> &tokens,
+            std::list<std::list<TokenKind>>::iterator curr, int begin,
+            int end) {
+  int location = -1;
+
+  location = find_location(tokens, curr, begin, end);
+
+  if (location == -1) {
+    if (++curr == Order.end()) {
+      return parenValue(tokens, begin, end);
+    }
+    return doOperation(tokens, curr, begin, end);
+  }
+
+  std::unique_ptr<Node> left(doOperation(tokens, curr, begin, location));
+  std::unique_ptr<Node> right(doOperation(tokens, curr, location + 1, end));
+
+  std::unique_ptr<Node> root = std::make_unique<OpNode>(
+      tokens[location].kind, std::move(left), std::move(right));
+  return root;
+}
+
+std::unique_ptr<Node> doOperation(vector<Token> &tokens) {
+  return doOperation(tokens, Order.begin(), 0, tokens.size());
 }
