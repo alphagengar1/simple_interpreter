@@ -4,6 +4,8 @@ std::ostream &operator<<(std::ostream &os, TokenKind kind) {
   switch (kind) {
   case TokenKind::Number:
     return os << "<num>";
+  case TokenKind::Variable:
+    return os << "<variable>";
   case TokenKind::Plus:
     return os << "+";
   case TokenKind::Minus:
@@ -16,6 +18,8 @@ std::ostream &operator<<(std::ostream &os, TokenKind kind) {
     return os << "(";
   case TokenKind::RParen:
     return os << ")";
+  case TokenKind::Equals:
+    return os << "=";
   case TokenKind::Eol:
     return os << "\\n";
   case TokenKind::Eof:

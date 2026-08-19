@@ -5,12 +5,14 @@
 
 enum class TokenKind {
   Number,
+  Variable,
   Plus,
   Minus,
   Star,
   Slash,
   LParen,
   RParen,
+  Equals,
   Eol,
   Eof
 };

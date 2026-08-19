@@ -1,14 +1,13 @@
 #include <iostream>
-#include <list>
 #include <math.h>
 #include <string>
 #include <vector>
-using namespace std;
 
-#include "./ast.h"
 #include "./lexer.h"
 #include "./parser.h"
 #include "./token.h"
+
+using namespace std;
 
 int main() {
 
@@ -19,9 +18,11 @@ int main() {
     lines.push_back(line);
   }
 
+  map<string, int> context;
+
   for (const string &line : lines) {
     vector<Token> tokens = lexer(line);
-    auto root = doOperation(tokens);
+    auto root = doOperation(tokens, context);
     cout << line << '=';
     cout << root->eval();
     cout << '\n';

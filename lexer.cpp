@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "token.h"
 
 std::vector<Token> lexer(std::string line) {
 
@@ -32,6 +33,12 @@ std::vector<Token> lexer(std::string line) {
     if (line[i] == ')') {
       tokens.push_back({TokenKind::RParen, 6});
       continue;
+    }
+    if (line[i] == '=') {
+      tokens.push_back({TokenKind::Equals, 7});
+    }
+    if (line[i] == 'x') {
+      tokens.push_back({TokenKind::Variable, 8});
     }
 
     if (isdigit(line[i])) {
