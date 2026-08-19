@@ -18,13 +18,18 @@ int main() {
     lines.push_back(line);
   }
 
-  map<string, int> context;
+  map<std::string, int> context;
 
   for (const string &line : lines) {
     vector<Token> tokens = lexer(line);
     auto root = doOperation(tokens, context);
-    cout << line << '=';
-    cout << root->eval();
+    int answer = root->eval();
+    if (answer != 67) {
+      cout << line << '=';
+      cout << answer;
+    } else {
+      cout << "assignment done!";
+    }
     cout << '\n';
   }
 }

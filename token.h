@@ -20,6 +20,7 @@ enum class TokenKind {
 struct Token {
   TokenKind kind;
   int value;
+  std::string name;
 };
 
 std::ostream &operator<<(std::ostream &os, TokenKind kind);

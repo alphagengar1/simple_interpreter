@@ -2,7 +2,6 @@
 #include "token.h"
 #include <functional>
 #include <map>
-#include <string>
 
 std::map<TokenKind, std::function<int(int, int)>> funcMap = {
     {TokenKind::Plus, [](int a, int b) { return a + b; }},
@@ -11,30 +10,35 @@ std::map<TokenKind, std::function<int(int, int)>> funcMap = {
     {TokenKind::Slash, [](int a, int b) { return a / b; }},
 };
 
+// number node
 NumberNode::NumberNode(int val) { value = val; }
 int NumberNode::eval() { return value; }
-std::string NumberNode::getName() { return ""; }
 
-OpNode::OpNode(TokenKind op, std::map<std::string, int> &c,
-               std::unique_ptr<Node> l, std::unique_ptr<Node> r) {
-  context = &c;
-  operation = op;
+// op node
+OpNode::OpNode(TokenKind op, std::unique_ptr<Node> l, std::unique_ptr<Node> r) {
+  type = op;
   leftChild = std::move(l);
   rightChild = std::move(r);
 }
 int OpNode::eval() {
-  if (operation == TokenKind::Equals) {
-    (*context)[leftChild->getName()] = rightChild->eval();
-    return rightChild->eval();
-  }
-  return funcMap.at(operation)(leftChild->eval(), rightChild->eval());
+  return funcMap.at(type)(leftChild->eval(), rightChild->eval());
 }
-std::string OpNode::getName() { return ""; }
 
-VariableNode::VariableNode(std::string str, std::map<std::string, int> &c) {
-  name = str;
+// var node
+VariableNode::VariableNode(std::string t, std::map<std::string, int> &c) {
+  varName = t;
   context = &c;
 }
+int VariableNode::eval() { return (*context).at(varName); }
 
-int VariableNode::eval() { return (*context).at(name); }
-std::string VariableNode::getName() { return name; }
+// assignment node
+AssignmentNode::AssignmentNode(std::string name, std::map<std::string, int> &c,
+                               std::unique_ptr<Node> val) {
+  varName = name;
+  context = &c;
+  value = std::move(val);
+}
+int AssignmentNode::eval() {
+  (*context)[varName] = value->eval();
+  return -67; // returns arbitrary value for now
+}
