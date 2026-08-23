@@ -11,34 +11,41 @@ std::vector<Token> lexer(std::string line) {
       continue;
 
     if (line[i] == '+') {
-      tokens.push_back({TokenKind::Plus, 1, ""});
+      tokens.push_back({TokenKind::Plus, 0, ""});
       continue;
     }
     if (line[i] == '-') {
-      tokens.push_back({TokenKind::Minus, 2, ""});
+      tokens.push_back({TokenKind::Minus, 0, ""});
       continue;
     }
     if (line[i] == '*') {
-      tokens.push_back({TokenKind::Star, 3, ""});
+      tokens.push_back({TokenKind::Star, 0, ""});
       continue;
     }
     if (line[i] == '/') {
-      tokens.push_back({TokenKind::Slash, 4, ""});
+      tokens.push_back({TokenKind::Slash, 0, ""});
       continue;
     }
     if (line[i] == '(') {
-      tokens.push_back({TokenKind::LParen, 5, ""});
+      tokens.push_back({TokenKind::LParen, 0, ""});
       continue;
     }
     if (line[i] == ')') {
-      tokens.push_back({TokenKind::RParen, 6, ""});
+      tokens.push_back({TokenKind::RParen, 0, ""});
       continue;
     }
     if (line[i] == '=') {
-      tokens.push_back({TokenKind::Equals, 7, ""});
+      tokens.push_back({TokenKind::Equals, 0, ""});
     }
-    if (line[i] == 'x') {
-      tokens.push_back({TokenKind::Variable, 8, std::string(1, line[i])});
+
+    if (isalpha(line[i])) {
+      std::string currentVar = "";
+      while (i < (int)line.size() && isalpha(line[i])) {
+        currentVar += line[i];
+        i++;
+      }
+      tokens.push_back({TokenKind::Variable, 0, currentVar});
+      i--;
     }
 
     if (isdigit(line[i])) {
@@ -51,5 +58,12 @@ std::vector<Token> lexer(std::string line) {
       i--;
     }
   }
+  // for (int i = 0; i < tokens.size(); i++) {
+  //   std::cout << i << ": ";
+  //   std::cout << tokens[i].kind << " ";
+  //   std::cout << tokens[i].name << " ";
+  //   std::cout << tokens[i].value << " ";
+  //   std::cout << "\n";
+  // }
   return tokens;
 }

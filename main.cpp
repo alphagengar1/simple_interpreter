@@ -24,7 +24,7 @@ int main() {
     vector<Token> tokens = lexer(line);
     auto root = doOperation(tokens, context);
     int answer = root->eval();
-    if (answer != 67) {
+    if (answer != -67) {
       cout << line << '=';
       cout << answer;
     } else {
