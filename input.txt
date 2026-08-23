@@ -15,5 +15,5 @@ x=x+2
 x
 y=x+12
 y
-z=y+x
-z
+zello=y+x
+zello

@@ -9,7 +9,7 @@
 class Node {
 public:
   virtual ~Node() {};
-  virtual int eval() = 0;
+  virtual int eval(std::map<std::string, int> &context) = 0;
 };
 
 class NumberNode : public Node {
@@ -17,7 +17,7 @@ public:
   NumberNode(int val);
   int value;
 
-  int eval() override;
+  int eval(std::map<std::string, int> &context);
 };
 
 class OpNode : public Node {
@@ -28,30 +28,26 @@ public:
   std::unique_ptr<Node> leftChild;
   std::unique_ptr<Node> rightChild;
 
-  int eval() override;
+  int eval(std::map<std::string, int> &context);
 };
 
 class AssignmentNode : public Node {
 public:
-  AssignmentNode(std::string name, std::map<std::string, int> &c,
-                 std::unique_ptr<Node> val);
+  AssignmentNode(std::string name, std::unique_ptr<Node> val);
 
-  std::map<std::string, int> *context;
   std::string varName;
   std::unique_ptr<Node> value;
 
-  int eval() override;
+  int eval(std::map<std::string, int> &context);
 };
 
 class VariableNode : public Node {
 public:
-  VariableNode(std::string, std::map<std::string, int> &c);
-
-  std::map<std::string, int> *context;
+  VariableNode(std::string);
 
   std::string varName;
 
-  int eval() override;
+  int eval(std::map<std::string, int> &context);
 };
 
 #endif // !AST_H

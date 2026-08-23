@@ -22,8 +22,8 @@ int main() {
 
   for (const string &line : lines) {
     vector<Token> tokens = lexer(line);
-    auto root = doOperation(tokens, context);
-    int answer = root->eval();
+    auto root = doOperation(tokens);
+    int answer = root->eval(context);
     if (answer != -67) {
       cout << line << '=';
       cout << answer;

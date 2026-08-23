@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-std::unique_ptr<Node> doOperation(std::vector<Token> &tokens,
-                                  std::map<std::string, int> &context);
+std::unique_ptr<Node> doOperation(std::vector<Token> &tokens);
 
 #endif // !PARSER_H

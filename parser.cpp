@@ -6,15 +6,13 @@ using std::vector;
 
 std::unique_ptr<Node>
 doOperation(std::vector<Token> &tokens,
-            std::list<std::list<TokenKind>>::iterator curr, int begin, int end,
-            std::map<std::string, int> &context);
+            std::list<std::list<TokenKind>>::iterator curr, int begin, int end);
 
-std::unique_ptr<Node> parenValue(std::vector<Token> &tokens, int begin, int end,
-                                 std::map<std::string, int> &context);
+std::unique_ptr<Node> parenValue(std::vector<Token> &tokens, int begin,
+                                 int end);
 
 int find_location(std::vector<Token> &tokens,
-                  std::list<std::list<TokenKind>>::iterator curr, int begin,
-                  int end, std::map<TokenKind, int> &context);
+                  std::list<std::list<TokenKind>>::iterator curr, int begin);
 
 std::map<std::list<TokenKind>, int> Directionality = {
     {{TokenKind::Equals}, 1},
@@ -69,8 +67,7 @@ int find_location(vector<Token> &tokens,
   return location;
 }
 
-std::unique_ptr<Node> parenValue(vector<Token> &tokens, int begin, int end,
-                                 std::map<std::string, int> &context) {
+std::unique_ptr<Node> parenValue(vector<Token> &tokens, int begin, int end) {
   if (begin == end) {
     std::cout << "paren error begin == end lolz\n";
     return nullptr;
@@ -84,13 +81,13 @@ std::unique_ptr<Node> parenValue(vector<Token> &tokens, int begin, int end,
 
   if (end - begin == 1 && tokens[begin].kind == TokenKind::Variable) {
     std::unique_ptr<Node> var =
-        std::make_unique<VariableNode>(tokens[begin].name, context);
+        std::make_unique<VariableNode>(tokens[begin].name);
     return var;
   }
 
   if (tokens[begin].kind == TokenKind::LParen &&
       tokens[end - 1].kind == TokenKind::RParen) {
-    return doOperation(tokens, Order.begin(), begin + 1, end - 1, context);
+    return doOperation(tokens, Order.begin(), begin + 1, end - 1);
   }
 
   std::cout << "PAREN VALUE ERROR\n";
@@ -103,40 +100,36 @@ std::unique_ptr<Node> parenValue(vector<Token> &tokens, int begin, int end,
 
 std::unique_ptr<Node>
 doOperation(vector<Token> &tokens,
-            std::list<std::list<TokenKind>>::iterator curr, int begin, int end,
-            std::map<std::string, int> &context) {
+            std::list<std::list<TokenKind>>::iterator curr, int begin,
+            int end) {
   int location = -1;
 
   location = find_location(tokens, curr, begin, end);
 
   if (location == -1) {
     if (++curr == Order.end()) {
-      return parenValue(tokens, begin, end, context);
+      return parenValue(tokens, begin, end);
     }
-    return doOperation(tokens, curr, begin, end, context);
+    return doOperation(tokens, curr, begin, end);
   }
 
   if ((*curr).front() == TokenKind::Equals) {
-    std::unique_ptr<Node> value(
-        doOperation(tokens, curr, location + 1, end, context));
+    std::unique_ptr<Node> value(doOperation(tokens, curr, location + 1, end));
 
     std::unique_ptr<Node> assignment = std::make_unique<AssignmentNode>(
-        tokens[location - 1].name, context, std::move(value));
+        tokens[location - 1].name, std::move(value));
 
     return assignment;
   }
 
-  std::unique_ptr<Node> left(
-      doOperation(tokens, curr, begin, location, context));
-  std::unique_ptr<Node> right(
-      doOperation(tokens, curr, location + 1, end, context));
+  std::unique_ptr<Node> left(doOperation(tokens, curr, begin, location));
+  std::unique_ptr<Node> right(doOperation(tokens, curr, location + 1, end));
 
   std::unique_ptr<Node> root = std::make_unique<OpNode>(
       tokens[location].kind, std::move(left), std::move(right));
   return root;
 }
 
-std::unique_ptr<Node> doOperation(vector<Token> &tokens,
-                                  std::map<std::string, int> &context) {
-  return doOperation(tokens, Order.begin(), 0, tokens.size(), context);
+std::unique_ptr<Node> doOperation(vector<Token> &tokens) {
+  return doOperation(tokens, Order.begin(), 0, tokens.size());
 }
