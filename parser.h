@@ -8,6 +8,6 @@
 #include <map>
 #include <vector>
 
-std::unique_ptr<Node> doOperation(std::vector<Token> &tokens);
+std::vector<std::unique_ptr<Node>> parseBlock(std::vector<Token> &tokens);
 
 #endif // !PARSER_H

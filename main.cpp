@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <iostream>
 #include <math.h>
 #include <string>
@@ -11,25 +12,15 @@ using namespace std;
 
 int main() {
 
-  vector<string> lines;
-  string line = "";
+  std::string lines((std::istreambuf_iterator<char>(std::cin)),
+                    std::istreambuf_iterator<char>());
 
-  while (getline(cin, line)) {
-    lines.push_back(line);
-  }
+  vector<Context> context;
 
-  map<std::string, int> context;
+  Master masterNode;
 
-  for (const string &line : lines) {
-    vector<Token> tokens = lexer(line);
-    auto root = doOperation(tokens);
-    int answer = root->eval(context);
-    if (answer != -67) {
-      cout << line << '=';
-      cout << answer;
-    } else {
-      cout << "assignment done!";
-    }
-    cout << '\n';
-  }
+  vector<Token> tokens = lexer(lines);
+
+  masterNode.addTree(parseBlock(tokens));
+  masterNode.eval(context);
 }

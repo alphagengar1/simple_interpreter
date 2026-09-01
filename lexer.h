@@ -2,6 +2,8 @@
 #define LEXER_H
 
 #include "token.h"
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

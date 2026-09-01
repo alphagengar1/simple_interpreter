@@ -1,11 +1,23 @@
 #include "token.h"
 
-std::ostream &operator<<(std::ostream &os, TokenKind kind) {
-  switch (kind) {
+std::ostream &operator<<(std::ostream &os, Token token) {
+  switch (token.kind) {
+  case TokenKind::Semicolon:
+    return os << ";";
+  case TokenKind::LBrace:
+    return os << "{";
+  case TokenKind::RBrace:
+    return os << "}";
+  case TokenKind::If:
+    return os << "if";
+  case TokenKind::Else:
+    return os << "else";
+  case TokenKind::Equality:
+    return os << "==";
   case TokenKind::Number:
-    return os << "<num>";
+    return os << token.value;
   case TokenKind::Variable:
-    return os << "<variable>";
+    return os << token.name;
   case TokenKind::Plus:
     return os << "+";
   case TokenKind::Minus:
